@@ -1,0 +1,7 @@
+https://start.spring.io/
+https://projectreactor.io/docs/core/release/reference/#getting
+Obtener dependencia core
+<dependency>
+  <groupId>io.projectreactor</groupId>
+  <artifactId>reactor-core</artifactId> 
+</dependency
