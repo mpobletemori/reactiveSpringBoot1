@@ -15,12 +15,18 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Flux<String> nombres = Flux.just("Manuel","Santi","Betty","","Eli","Antonio").doOnNext(value->{
+		Flux<String> nombres = Flux.just("Manuel","Santi","Betty","Shobi","Eli","Antonio").doOnNext(value->{
 			if(value.isEmpty()){
 				throw new RuntimeException("Nombres no puede ser validado");
 			}
             System.out.println(value);
 		});
-		nombres.subscribe(log::info,error->log.error(error.getMessage()));
+		nombres.subscribe(log::info, error -> log.error(error.getMessage()), new Runnable() {
+			@Override
+			public void run() {
+				//se lanza cuando se procesa el total de lista
+				log.info("Ha finalizado la ejecucion del observable con exito!");
+			}
+		});
 	}
 }
