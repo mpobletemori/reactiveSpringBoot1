@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 @SpringBootApplication
 public class SpringBootReactorApplication implements CommandLineRunner {
@@ -32,8 +33,30 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploUsuarioComentariosZipWithForma2();
 		//ejemploZipWithRangos();
 		//ejemploInterval();
-		ejemploDelayElements();
+		//ejemploDelayElements();
+		ejemploIntervaloInfinito();
 		log.info("culminacion de ejecucion de ejemplo");
+	}
+
+	public void ejemploIntervaloInfinito() throws InterruptedException {
+		CountDownLatch latch = new CountDownLatch(1);
+
+		Flux.interval(Duration.ofSeconds(1))
+				//.doOnTerminate(()-> latch.countDown())
+				.doOnTerminate(latch::countDown)//ejecuta cuando termina de ejecutar
+				.flatMap(i->{
+					if(i>=5){
+						return Flux.error(new InterruptedException("Solo hasta 5 elementos!"));
+					}
+					return Flux.just(i);
+				})
+				.map(i->"Hola "+i)
+				.retry(2) //en caso genere error vuelve a intertar denuevo segun la cantidad de veces indicada en parmetro
+				//.doOnNext(s->log.info(s))
+				.subscribe(s->log.info(s),e->log.error(e.getMessage()));
+
+		latch.await();
+
 	}
 
 	public void ejemploDelayElements() throws InterruptedException {
