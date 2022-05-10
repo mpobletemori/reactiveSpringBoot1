@@ -13,6 +13,8 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
 @SpringBootApplication
@@ -34,8 +36,37 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploZipWithRangos();
 		//ejemploInterval();
 		//ejemploDelayElements();
-		ejemploIntervaloInfinito();
+		//ejemploIntervaloInfinito();
+		ejemploIntervaloDesdeCreate();
 		log.info("culminacion de ejecucion de ejemplo");
+	}
+
+	public void ejemploIntervaloDesdeCreate(){
+		Flux<Integer> integerFlux = Flux.create(emmiter->{
+			Timer timer = new Timer();
+			timer.schedule(new TimerTask() {
+				private Integer contador =0;
+				@Override
+				public void run() {
+					emmiter.next(++contador);
+					if(contador == 10){
+						timer.cancel();
+						emmiter.complete();
+					}
+					if(contador ==5){
+						timer.cancel();
+						emmiter.error(new InterruptedException("Error,se ha detectado el flux en 5!"));
+					}
+				}
+			}, 1000, 1000);
+		});
+
+		//forma 1
+		//integerFlux.doOnNext(next->log.info(next.toString()))
+		  //.doOnComplete(()->log.info("hemos terminado"))
+		  //.subscribe();
+        //forma2
+		integerFlux.subscribe(next->log.info(next.toString()),e->log.error(e.getMessage()),()->log.info("hemos terminado"));
 	}
 
 	public void ejemploIntervaloInfinito() throws InterruptedException {
