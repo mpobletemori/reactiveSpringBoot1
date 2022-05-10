@@ -22,8 +22,28 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		//ejemploIterable();
 		//ejemploFlatMap();
-		ejemploToString();
+		//ejemploToString();
+		ejemploCollectToList();
 	}
+
+	public void ejemploCollectToList() throws Exception {
+		log.info("Ejemplo convertir Flux a Mono");
+		List<Usuario> listNombres = List.of(new Usuario("Manuel","Poblete")
+				,new Usuario("Santi","Poblete")
+				,new Usuario("Betty","Cuenca")
+				,new Usuario("Shobi","Ribeiro")
+				,new Usuario("Eli","Mori")
+				,new Usuario("Antonio","Sanchez")
+				,new Usuario("Bruce","Lee")
+				,new Usuario("Bruce","Willis"));
+
+		Flux.fromIterable(listNombres)
+				.collectList()
+			.subscribe(listaUsuarios->{
+				listaUsuarios.forEach(value->log.info(value.toString()));
+		});
+	}
+
 
 	public void ejemploToString() throws Exception {
 		log.info("Ejemplo convertir obj a string");
