@@ -1,5 +1,7 @@
 package ccom.example.springboot.reactor.app;
+import ccom.example.springboot.reactor.app.models.Comentarios;
 import ccom.example.springboot.reactor.app.models.Usuario;
+import ccom.example.springboot.reactor.app.models.UsuarioComentarios;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -23,7 +25,18 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploIterable();
 		//ejemploFlatMap();
 		//ejemploToString();
-		ejemploCollectToList();
+		//ejemploCollectToList();
+		ejemploUsuarioComentariosFlatMap();
+	}
+
+	public void ejemploUsuarioComentariosFlatMap(){
+		Mono<Usuario> usuarioMono = Mono.fromCallable(()-> new Usuario("John","Doe"));
+		Mono<Comentarios> comentariosMono = Mono.just(new Comentarios()
+				.addComentario("Hola pepe,que tal!")
+				.addComentario("Mañana voy a la playa!")
+				.addComentario("Estoy tomando el curso de spring con reactor"));
+
+		usuarioMono.flatMap(u-> comentariosMono.map(c-> new UsuarioComentarios(u,c))).subscribe(uc->log.info(uc.toString()));
 	}
 
 	public void ejemploCollectToList() throws Exception {
