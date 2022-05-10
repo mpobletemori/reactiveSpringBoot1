@@ -18,18 +18,23 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		Flux<Usuario> nombres = Flux.just("Manuel","Santi","Betty","Shobi","Eli","Antonio")
+		Flux<Usuario> nombres = Flux.just("Manuel Poblete","Santi Poblete","Betty Cuenca","Shobi Ribeiro","Eli Mori","Antonio Sanchez","Bruce Lee","Bruce Willis")
 				.map(nombre->{
 					var nombreUpperCase =nombre.toUpperCase();
 					log.info("map="+nombreUpperCase);
-					return new Usuario(nombreUpperCase,null);
+					return new Usuario(nombreUpperCase.split(" ")[0],nombreUpperCase.split(" ")[1]);
+				})
+				.filter(usuario-> {
+					 var value = usuario.getNombre().equalsIgnoreCase("bruce");
+					 log.info("filter="+usuario.toString()+",result="+value);
+					 return value;
 				})
 				.doOnNext(usuario->{
 					if(Objects.isNull(usuario)){
 						log.error("campo vacio");
 						throw new RuntimeException("Nombres no puede ser validado");
 					}
-					log.info("doOnNext="+usuario.getNombre());
+					log.info("doOnNext="+usuario.toString());
 				}).map(usuario->{
 					var nombreLowerCase =usuario.getNombre().toLowerCase();
 					log.info("map="+nombreLowerCase);
