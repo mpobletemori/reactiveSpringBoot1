@@ -26,7 +26,33 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploFlatMap();
 		//ejemploToString();
 		//ejemploCollectToList();
-		ejemploUsuarioComentariosFlatMap();
+		//ejemploUsuarioComentariosFlatMap();
+		//ejemploUsuarioComentariosZipWith();
+		ejemploUsuarioComentariosZipWithForma2();
+	}
+
+	public void ejemploUsuarioComentariosZipWithForma2(){
+		Mono<Usuario> usuarioMono = Mono.fromCallable(()-> new Usuario("John","Doe"));
+		Mono<Comentarios> comentariosMono = Mono.just(new Comentarios()
+				.addComentario("Hola pepe,que tal!")
+				.addComentario("Mañana voy a la playa!")
+				.addComentario("Estoy tomando el curso de spring con reactor"));
+		usuarioMono.zipWith(comentariosMono)
+				.map(tuple->{
+					Usuario u = tuple.getT1();
+					Comentarios c = tuple.getT2();
+					return new UsuarioComentarios(u,c);
+				}).subscribe(uc->log.info(uc.toString()));
+	}
+
+
+	public void ejemploUsuarioComentariosZipWith(){
+		Mono<Usuario> usuarioMono = Mono.fromCallable(()-> new Usuario("John","Doe"));
+		Mono<Comentarios> comentariosMono = Mono.just(new Comentarios()
+				.addComentario("Hola pepe,que tal!")
+				.addComentario("Mañana voy a la playa!")
+				.addComentario("Estoy tomando el curso de spring con reactor"));
+		usuarioMono.zipWith(comentariosMono,(usuario,comentarios)->new UsuarioComentarios(usuario,comentarios)).subscribe(uc->log.info(uc.toString()));
 	}
 
 	public void ejemploUsuarioComentariosFlatMap(){
