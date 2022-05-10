@@ -21,7 +21,43 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		//ejemploIterable();
-		ejemploFlatMap();
+		//ejemploFlatMap();
+		ejemploToString();
+	}
+
+	public void ejemploToString() throws Exception {
+		log.info("Ejemplo convertir obj a string");
+		List<Usuario> listNombres = List.of(new Usuario("Manuel","Poblete")
+				                           ,new Usuario("Santi","Poblete")
+				                           ,new Usuario("Betty","Cuenca")
+				                           ,new Usuario("Shobi","Ribeiro")
+				                           ,new Usuario("Eli","Mori")
+				                           ,new Usuario("Antonio","Sanchez")
+				                           ,new Usuario("Bruce","Lee")
+				                           ,new Usuario("Bruce","Willis"));
+
+		Flux.fromIterable(listNombres)
+				.map(usuario->{
+					String concat = new StringBuilder(usuario.getNombre().toUpperCase())
+							.append(" ")
+							.append(usuario.getApellido().toUpperCase())
+							.toString();
+					log.info("map="+concat);
+					return concat;
+				})
+				.flatMap(nombre-> {
+					if(nombre.contains("bruce".toUpperCase())){
+						log.info("flatMap="+nombre+",mantener elemento en observable");
+						return Mono.just(nombre);
+					}
+					log.info("flatMap="+nombre+", sacar elemento en observable");
+					return Mono.empty();
+				})
+				.map(nombre->{
+					var nombreLowerCase =nombre.toLowerCase();
+					log.info("map="+nombreLowerCase);
+					return nombreLowerCase;
+				}).subscribe(log::info);
 	}
 
 	public void ejemploFlatMap() throws Exception {
