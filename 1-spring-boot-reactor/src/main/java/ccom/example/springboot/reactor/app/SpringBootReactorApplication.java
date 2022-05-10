@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,9 +30,30 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploUsuarioComentariosFlatMap();
 		//ejemploUsuarioComentariosZipWith();
 		//ejemploUsuarioComentariosZipWithForma2();
-		ejemploZipWithRangos();
+		//ejemploZipWithRangos();
+		//ejemploInterval();
+		ejemploDelayElements();
+		log.info("culminacion de ejecucion de ejemplo");
 	}
 
+	public void ejemploDelayElements() throws InterruptedException {
+		Flux<Integer> rango = Flux.range(1, 12)
+				.delayElements(Duration.ofSeconds(1))
+				.doOnNext(i-> log.info(i.toString()));
+		rango.blockLast();//bloquea el flujo no recomendable usar en prod
+		//rango.subscribe();//al usar subscribe se ejecuta en 2do plano
+		Thread.sleep(13000);
+	}
+
+	public void ejemploInterval(){
+		Flux<Integer> rango = Flux.range(1, 12);
+		Flux<Long> retraso = Flux.interval(Duration.ofSeconds(1));
+
+		rango.zipWith(retraso,(ra,re)->ra)
+				.doOnNext(i-> log.info(i.toString()))
+				.blockLast();//bloquea el flujo no recomendable usar en prod
+				//.subscribe();//al usar subscribe se ejecuta en 2do plano
+	}
 	public void ejemploZipWithRangos(){
 		Flux<Integer> rangosIntFlux = Flux.range(0, 4);
 		Flux.just(1,2,3,4)
