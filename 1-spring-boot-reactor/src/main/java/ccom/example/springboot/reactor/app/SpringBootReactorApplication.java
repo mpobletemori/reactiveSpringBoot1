@@ -2,6 +2,8 @@ package ccom.example.springboot.reactor.app;
 import ccom.example.springboot.reactor.app.models.Comentarios;
 import ccom.example.springboot.reactor.app.models.Usuario;
 import ccom.example.springboot.reactor.app.models.UsuarioComentarios;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -37,9 +39,50 @@ public class SpringBootReactorApplication implements CommandLineRunner {
 		//ejemploInterval();
 		//ejemploDelayElements();
 		//ejemploIntervaloInfinito();
-		ejemploIntervaloDesdeCreate();
+		//ejemploIntervaloDesdeCreate();
+		ejemploContraPresion();
 		log.info("culminacion de ejecucion de ejemplo");
 	}
+
+	public void ejemploContraPresion(){
+		Flux<Integer> integerFlux =Flux.range(1,10);
+		 //Forma 1
+		integerFlux.log().limitRate(5).subscribe(integer->log.info(integer.toString()));
+         //Forma 2
+		 /*integerFlux.log()
+				.subscribe(new Subscriber<Integer>() {
+					private Subscription s;
+					private Integer limite=5;
+					private Integer consumido=0;
+
+					@Override
+					public void onSubscribe(Subscription s) {
+						this.s= s;
+						this.s.request(limite);
+					}
+
+					@Override
+					public void onNext(Integer integer) {
+						log.info(integer.toString());
+						this.consumido++;
+						if(this.consumido == this.limite){
+							this.consumido =0;
+							this.s.request(this.limite);
+						}
+					}
+
+					@Override
+					public void onError(Throwable t) {
+
+					}
+
+					@Override
+					public void onComplete() {
+
+					}
+				});*/
+	}
+
 
 	public void ejemploIntervaloDesdeCreate(){
 		Flux<Integer> integerFlux = Flux.create(emmiter->{
