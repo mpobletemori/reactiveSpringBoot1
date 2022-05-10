@@ -1,4 +1,4 @@
-package ccom.example.springboot.reactor.app;
+package com.example.springboot.reactor.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

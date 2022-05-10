@@ -1,4 +1,4 @@
-package ccom.example.springboot.reactor.app.models;
+package com.example.springboot.reactor.app.models;
 
 public class Usuario {
     private String nombre;

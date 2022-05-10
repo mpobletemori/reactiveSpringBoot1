@@ -1,4 +1,4 @@
-package ccom.example.springboot.reactor.app.models;
+package com.example.springboot.reactor.app.models;
 
 import java.util.ArrayList;
 import java.util.List;
