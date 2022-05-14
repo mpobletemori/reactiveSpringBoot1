@@ -14,6 +14,14 @@ public class ProductoDocument {
     private Double precio;
     private Date createAt;
 
+    public ProductoDocument() {
+    }
+
+    public ProductoDocument(String nombre, Double precio) {
+        this.nombre = nombre;
+        this.precio = precio;
+    }
+
     public String getId() {
         return id;
     }
