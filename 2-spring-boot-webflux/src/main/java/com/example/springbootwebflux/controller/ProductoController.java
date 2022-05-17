@@ -46,4 +46,17 @@ public class ProductoController {
         model.addAttribute("titulo", "Listado de productos");
         return "listar";
     }
+
+    @GetMapping("/listar-full")
+    public String listarFull(Model model){
+        Flux<ProductoDocument> productos = productoRepository.findAll().map(producto->{
+            producto.setNombre(producto.getNombre().toUpperCase());
+            return producto;
+        }).repeat(5000);
+
+        productos.subscribe(producto->LOGGER.info(producto.getNombre()));
+        model.addAttribute("productos", productos);
+        model.addAttribute("titulo", "Listado de productos");
+        return "listar";
+    }
 }
