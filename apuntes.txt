@@ -8,3 +8,8 @@ Obtener dependencia core
 
 Comandos mongodb
 ======================================
+
+Levantar mongo db usando docker desktop 
+credenciales
+Usuario :vaxidrez
+Clave   :VaxiDrez2005$
