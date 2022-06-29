@@ -1,8 +1,7 @@
 package com.example.springbootwebflux.controller;
 
 import com.example.springbootwebflux.models.documents.ProductoDocument;
-import com.example.springbootwebflux.models.repository.ProductoRepository;
-import org.hibernate.validator.constraints.CodePointLength;
+import com.example.springbootwebflux.models.services.ProductoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +18,11 @@ public class ProductoController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
     @Autowired
-    private ProductoRepository productoRepository;
+    private ProductoService productoService;
 
     @GetMapping({"/listar","/"})
     public String listar(Model model){
-        Flux<ProductoDocument> productos = productoRepository.findAll().map(producto->{
-            producto.setNombre(producto.getNombre().toUpperCase());
-            return producto;
-        });
+        Flux<ProductoDocument> productos = productoService.findAllConNombreUpperCase();
 
         productos.subscribe(producto->LOGGER.info(producto.getNombre()));
         model.addAttribute("productos", productos);
@@ -36,10 +32,8 @@ public class ProductoController {
 
     @GetMapping("/listar-datadriver")
     public String listarDataDriver(Model model){
-        Flux<ProductoDocument> productos = productoRepository.findAll().map(producto->{
-            producto.setNombre(producto.getNombre().toUpperCase());
-            return producto;
-        }).delayElements(Duration.ofSeconds(1));
+        Flux<ProductoDocument> productos = productoService.findAllConNombreUpperCase()
+                .delayElements(Duration.ofSeconds(1));
 
         productos.subscribe(producto->LOGGER.info(producto.getNombre()));
         model.addAttribute("productos", new ReactiveDataDriverContextVariable(productos,1));
@@ -49,10 +43,7 @@ public class ProductoController {
 
     @GetMapping("/listar-full")
     public String listarFull(Model model){
-        Flux<ProductoDocument> productos = productoRepository.findAll().map(producto->{
-            producto.setNombre(producto.getNombre().toUpperCase());
-            return producto;
-        }).repeat(5000);
+        Flux<ProductoDocument> productos = productoService.findAllConNombreUpperCaseRepeat();
 
         productos.subscribe(producto->LOGGER.info(producto.getNombre()));
         model.addAttribute("productos", productos);
@@ -62,10 +53,7 @@ public class ProductoController {
 
     @GetMapping("/listar-chunked")
     public String listarChunked(Model model){
-        Flux<ProductoDocument> productos = productoRepository.findAll().map(producto->{
-            producto.setNombre(producto.getNombre().toUpperCase());
-            return producto;
-        }).repeat(5000);
+        Flux<ProductoDocument> productos = productoService.findAllConNombreUpperCaseRepeat();
 
         productos.subscribe(producto->LOGGER.info(producto.getNombre()));
         model.addAttribute("productos", productos);
