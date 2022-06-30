@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -28,6 +30,20 @@ public class ProductoController {
         model.addAttribute("productos", productos);
         model.addAttribute("titulo", "Listado de productos");
         return "listar";
+    }
+
+    @GetMapping("/form")
+    public Mono<String> crear(Model model){
+        model.addAttribute("producto",new ProductoDocument());
+        model.addAttribute("titulo", "Listado de productos");
+        return Mono.just("form");
+    }
+
+    @PostMapping("/form")
+    public Mono<String> guardar(ProductoDocument producto){
+            return this.productoService.save(producto).doOnNext(p->{
+                LOGGER.info("Producto guardado {} , id: {}",p.getNombre(),p.getId());
+            }).thenReturn("redirect:/listar");
     }
 
     @GetMapping("/listar-datadriver")

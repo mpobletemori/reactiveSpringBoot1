@@ -36,7 +36,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public Mono<ProductoDocument> findById(String id) {
-        return this.productoRepository.findById(id;
+        return this.productoRepository.findById(id);
     }
 
     @Override
