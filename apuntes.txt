@@ -13,3 +13,8 @@ Levantar mongo db usando docker desktop
 credenciales
 Usuario :vaxidrez
 Clave   :VaxiDrez2005$
+
+
+docker network create --attachable -d bridge mongodb_1_network
+docker-compose up -d
+docker-compose down
