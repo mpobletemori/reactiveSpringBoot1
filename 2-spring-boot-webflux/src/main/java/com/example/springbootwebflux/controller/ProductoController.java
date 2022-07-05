@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Objects;
 
 //@SessionAttributes("producto")
 @Controller
@@ -89,6 +90,22 @@ public class ProductoController {
                 }).thenReturn("redirect:/listar?success=producto+guardado+con+exito");
             }
     }
+
+    @GetMapping("/eliminar/{id}")
+    public Mono<String> eliminar(@PathVariable String id){
+        return productoService.findById(id)
+                .defaultIfEmpty(new ProductoDocument())
+                .flatMap(p->{
+                    if(Objects.isNull(p.getId())){
+                        return Mono.error(new InterruptedException("No existe el producto a eliminar"));
+                    }
+                    return Mono.just(p);
+                })
+                .flatMap(p->productoService.delete(p))
+                .then(Mono.just("redirect:/listar?success=producto+eliminado+con+exito"))
+                .onErrorResume(ex->Mono.just("redirect:/listar?error=no+existe+el+producto"));
+    }
+
 
     @GetMapping("/listar-datadriver")
     public String listarDataDriver(Model model){

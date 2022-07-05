@@ -16,6 +16,6 @@ public interface ProductoService {
 
     Mono<ProductoDocument> save(ProductoDocument producto);
 
-    Mono<Void> detele(ProductoDocument producto);
+    Mono<Void> delete(ProductoDocument producto);
 
 }

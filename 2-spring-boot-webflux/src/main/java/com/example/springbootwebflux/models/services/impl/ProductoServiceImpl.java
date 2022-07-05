@@ -45,7 +45,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Mono<Void> detele(ProductoDocument producto) {
+    public Mono<Void> delete(ProductoDocument producto) {
         return this.productoRepository.delete(producto);
     }
 }
