@@ -1,5 +1,6 @@
 package com.example.springbootwebflux.models.services;
 
+import com.example.springbootwebflux.models.documents.CategoriaDocument;
 import com.example.springbootwebflux.models.documents.ProductoDocument;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,5 +18,12 @@ public interface ProductoService {
     Mono<ProductoDocument> save(ProductoDocument producto);
 
     Mono<Void> delete(ProductoDocument producto);
+
+    Flux<CategoriaDocument> findAllCategoria();
+
+    Mono<CategoriaDocument> findCategoriaById(String id);
+
+    Mono<CategoriaDocument> saveCategoria(CategoriaDocument categoria);
+
 
 }

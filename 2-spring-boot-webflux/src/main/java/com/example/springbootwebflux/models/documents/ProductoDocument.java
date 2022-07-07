@@ -21,12 +21,19 @@ public class ProductoDocument {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date createAt;
 
+    private CategoriaDocument categoria;
+
     public ProductoDocument() {
     }
 
     public ProductoDocument(String nombre, Double precio) {
         this.nombre = nombre;
         this.precio = precio;
+    }
+
+    public ProductoDocument(String nombre, Double precio,CategoriaDocument categoria) {
+        this(nombre,precio);
+        this.categoria = categoria;
     }
 
     public String getId() {
@@ -59,5 +66,13 @@ public class ProductoDocument {
 
     public void setCreateAt(Date createAt) {
         this.createAt = createAt;
+    }
+
+    public CategoriaDocument getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(CategoriaDocument categoria) {
+        this.categoria = categoria;
     }
 }
