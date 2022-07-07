@@ -1,7 +1,8 @@
 package com.example.springbootwebflux;
 
+import com.example.springbootwebflux.models.documents.CategoriaDocument;
 import com.example.springbootwebflux.models.documents.ProductoDocument;
-import com.example.springbootwebflux.models.repository.ProductoRepository;
+import com.example.springbootwebflux.models.services.ProductoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class SpringBootWebfluxApplication implements CommandLineRunner {
 	private ReactiveMongoTemplate reactiveMongoTemplate;
 
 	@Autowired
-	private ProductoRepository productoRepository;
+	private ProductoService productoService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootWebfluxApplication.class, args);
@@ -31,15 +32,27 @@ public class SpringBootWebfluxApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		reactiveMongoTemplate.dropCollection("productos").subscribe();
-		Flux.just(new ProductoDocument("TV Panasonic Pantalla LCD",456.89)
-				,new ProductoDocument("Sony Camara HD Digital",177.89)
-		        ,new ProductoDocument("Apple iPod",46.89)
-				,new ProductoDocument("Sony Notebook",846.89))
-				.flatMap(prod->{
-					prod.setCreateAt(new Date());
-					return productoRepository.save(prod);})
-				.subscribe(productoDocument -> log.info("Insert:"+productoDocument.getId()+" "+productoDocument.getNombre()));
+		reactiveMongoTemplate.dropCollection("categorias").subscribe();
 
+		CategoriaDocument electronica = new CategoriaDocument("Electronica");
+		CategoriaDocument deporte = new CategoriaDocument("Deporte");
+		CategoriaDocument computacion = new CategoriaDocument("Computacion");
+		CategoriaDocument muebles = new CategoriaDocument("Muebles");
 
+		Flux.just(electronica,deporte,computacion,muebles)
+				.flatMap(productoService::saveCategoria)
+				.doOnNext(p-> log.info("Categoria creada :{} , Id:{}",p.getNombre(),p.getId()))
+				.thenMany(
+				 		Flux.just(new ProductoDocument("TV Panasonic Pantalla LCD",456.89,electronica)
+									,new ProductoDocument("Sony Camara HD Digital",177.89,electronica)
+		        					,new ProductoDocument("Apple iPod",46.89)
+									,new ProductoDocument("Sony Notebook",846.89,computacion)
+									,new ProductoDocument("Bianchi Bicicleta",946.89,deporte)
+								    ,new ProductoDocument("Mica comoda 5 cajones",1046.89,muebles))
+									.flatMap(prod->{
+													prod.setCreateAt(new Date());
+													return productoService.save(prod);
+											})
+				).subscribe(productoDocument -> log.info("Insert:"+productoDocument.getId()+" "+productoDocument.getNombre()));
 	}
 }
