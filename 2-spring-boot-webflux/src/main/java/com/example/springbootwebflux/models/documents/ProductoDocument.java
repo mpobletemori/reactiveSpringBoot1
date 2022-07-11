@@ -25,6 +25,8 @@ public class ProductoDocument {
     @Valid
     private CategoriaDocument categoria;
 
+    private String foto;
+
     public ProductoDocument() {
     }
 
@@ -76,5 +78,13 @@ public class ProductoDocument {
 
     public void setCategoria(CategoriaDocument categoria) {
         this.categoria = categoria;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
     }
 }
