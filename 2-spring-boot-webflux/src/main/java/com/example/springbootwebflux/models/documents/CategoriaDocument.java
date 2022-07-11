@@ -3,10 +3,13 @@ package com.example.springbootwebflux.models.documents;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotEmpty;
+
 @Document(collection = "categorias")
 public class CategoriaDocument {
     
     @Id
+    @NotEmpty
     private String id;
     private String nombre;
 

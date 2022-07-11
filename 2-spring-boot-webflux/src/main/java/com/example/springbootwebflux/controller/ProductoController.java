@@ -1,5 +1,6 @@
 package com.example.springbootwebflux.controller;
 
+import com.example.springbootwebflux.models.documents.CategoriaDocument;
 import com.example.springbootwebflux.models.documents.ProductoDocument;
 import com.example.springbootwebflux.models.services.ProductoService;
 import org.slf4j.Logger;
@@ -26,6 +27,11 @@ public class ProductoController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
     @Autowired
     private ProductoService productoService;
+
+    @ModelAttribute("categorias")
+    public Flux<CategoriaDocument> categorias(){
+        return productoService.findAllCategoria();
+    }
 
     @GetMapping({"/listar","/"})
     public String listar(Model model){
@@ -85,9 +91,17 @@ public class ProductoController {
                 if(producto.getCreateAt() ==null){
                     producto.setCreateAt(new Date());
                 }
-                return this.productoService.save(producto).doOnNext(p -> {
+
+                Mono<CategoriaDocument> categoria = productoService.findCategoriaById(producto.getCategoria().getId());
+
+                return categoria.flatMap(c->{
+                    producto.setCategoria(c);
+                    return this.productoService.save(producto);
+                }).doOnNext(p -> {
+                    LOGGER.info("Categoria asignada {} , id Categoria: {}", p.getCategoria().getNombre(), p.getCategoria().getId());
                     LOGGER.info("Producto guardado {} , id: {}", p.getNombre(), p.getId());
                 }).thenReturn("redirect:/listar?success=producto+guardado+con+exito");
+
             }
     }
 
