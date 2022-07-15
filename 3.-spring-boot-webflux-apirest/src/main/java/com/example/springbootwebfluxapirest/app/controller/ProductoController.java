@@ -26,6 +26,26 @@ public class ProductoController {
     @Value("${config.uploads.path}")
     private String path;
 
+    @PostMapping("/v2")
+    public Mono<ResponseEntity<ProductoDocument>> crearConFoto(ProductoDocument producto, @RequestPart FilePart file){
+        if(producto.getCreateAt() == null){
+            producto.setCreateAt(new Date());
+        }
+
+        producto.setFoto(UUID.randomUUID().toString() +"-"+file.filename()
+                .replace(" ", "")
+                .replace(":", "")
+                .replace("\\", ""));
+
+        return file.transferTo(
+                new File(path+producto.getFoto())
+        ).then(productoService.save(producto)).map(p->
+                ResponseEntity
+                        .created(URI.create("/api/productos/".concat(p.getId())))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8).body(p)
+                );
+    }
+
     @PostMapping("/upload/{id}")
     public Mono<ResponseEntity<ProductoDocument>> upload(@PathVariable String id, @RequestPart FilePart file){
             return productoService.findById(id).flatMap(p->{
@@ -40,8 +60,6 @@ public class ProductoController {
             }).map(p->ResponseEntity.ok(p))
               .defaultIfEmpty(ResponseEntity.notFound().build());
     }
-
-
 
     @GetMapping
     public Mono<ResponseEntity<Flux<ProductoDocument>>>  listar(){
