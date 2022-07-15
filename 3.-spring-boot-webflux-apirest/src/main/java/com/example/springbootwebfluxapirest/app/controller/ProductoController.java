@@ -9,12 +9,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.net.URI;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -77,15 +80,36 @@ public class ProductoController {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<ProductoDocument>> crear(@RequestBody ProductoDocument producto){
-        if(producto.getCreateAt() == null){
-            producto.setCreateAt(new Date());
-        }
+    public Mono<ResponseEntity<Map<String,Object>>> crear(@Valid @RequestBody Mono<ProductoDocument> producto){
 
-        return productoService.save(producto).map(p->
+        return producto.flatMap(p->{
+            if(p.getCreateAt() == null){
+                p.setCreateAt(new Date());
+            }
+            return productoService.save(p).map(prod->
                     ResponseEntity
-                            .created(URI.create("/api/productos/".concat(p.getId())))
-                            .contentType(MediaType.APPLICATION_JSON_UTF8).body(p));
+                            .created(URI.create("/api/productos/".concat(prod.getId())))
+                            .contentType(MediaType.APPLICATION_JSON_UTF8).body(
+                                    Map.of( "producto",prod,
+                                            "mensaje","Producto creado con exito",
+                                            "timestamp",new Date()
+                                           )
+                            )
+            );
+        }).onErrorResume(t->
+                Mono.just(t).cast(WebExchangeBindException.class)
+                        .flatMap(e->Mono.just(e.getFieldErrors()))
+                        .flatMapMany(Flux::fromIterable)
+                        .map(fieldError -> "El campo "+fieldError.getField()+" "+fieldError.getDefaultMessage())
+                        .collectList()
+                        .flatMap(list->Mono.just(ResponseEntity.badRequest().body(
+                                Map.of( "errros",list,
+                                "status",HttpStatus.BAD_REQUEST.toString(),
+                                "timestamp",new Date())
+                        )))
+                );
+
+
     }
 
     @PutMapping("/{id}")
