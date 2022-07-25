@@ -3,21 +3,61 @@ package com.example.springbootwebfluxapirest.app.handler;
 import com.example.springbootwebfluxapirest.app.models.documents.ProductoDocument;
 import com.example.springbootwebfluxapirest.app.models.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class ProductoHandler {
 
     @Autowired
     private ProductoService productoService;
+
+    @Value("${config.uploads.path}")
+    private String path;
+
+    public Mono<ServerResponse> upload(ServerRequest request){
+        String id = request.pathVariable("id");
+        return request.multipartData().map(multipart->{
+                    //obtener archivo subido
+                    return multipart.toSingleValueMap().get("archivo");
+        })
+        //transformar al tipo FilePart por que devuelve
+        .cast(FilePart.class)
+        .flatMap(archivo->{
+            //buscar registro de producto a editar
+            return productoService.findById(id).flatMap(p->{
+                 //agregar campos a editar de imagen
+                 p.setFoto(UUID.randomUUID().toString()+"-"+archivo.filename()
+                         .replace(" ", "-")
+                         .replace(":", "")
+                         .replace("\\", ""));
+                 //guarda archivo en filesystem
+                 return archivo.transferTo(new File(path+p.getFoto()))
+                         //ejecuta modificar producto en mongodb
+                         .then(productoService.save(p));
+            });
+        })//Generamos valor de respuesta
+           .flatMap(p->ServerResponse.created(URI.create("/api/v2/productos/".concat(p.getId())))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .body(BodyInserters.fromObject(p)))
+           //en caso el mono este vacio lanzar notFound
+           .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+
+
+
 
     public Mono<ServerResponse> listar(ServerRequest request){
         return ServerResponse
