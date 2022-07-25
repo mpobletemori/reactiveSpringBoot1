@@ -22,7 +22,8 @@ public class RouterFunctionConfig {
                 .andRoute(POST("/api/v2/productos"),request->productoHandler.crear(request))
                 .andRoute(PUT("/api/v2/productos/{id}").and(contentType(MediaType.APPLICATION_JSON)), request->productoHandler.editar(request))
                 .andRoute(DELETE("/api/v2/productos/{id}").and(contentType(MediaType.APPLICATION_JSON)), request->productoHandler.eliminar(request))
-                .andRoute(POST("/api/v2/productos/{id}/uploads"),request->productoHandler.upload(request));
+                .andRoute(POST("/api/v2/productos/{id}/uploads"),request->productoHandler.upload(request))
+                .andRoute(POST("/api/v2/productos/crear-con-foto"),request->productoHandler.crearConFoto(request));
     }
 
 }

@@ -20,6 +20,11 @@ public class CategoriaDocument {
         this.nombre = nombre;
     }
 
+    public CategoriaDocument(String id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
+    }
+
     public String getId() {
         return id;
     }

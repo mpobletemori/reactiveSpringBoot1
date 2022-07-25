@@ -1,11 +1,13 @@
 package com.example.springbootwebfluxapirest.app.handler;
 
+import com.example.springbootwebfluxapirest.app.models.documents.CategoriaDocument;
 import com.example.springbootwebfluxapirest.app.models.documents.ProductoDocument;
 import com.example.springbootwebfluxapirest.app.models.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -25,6 +27,43 @@ public class ProductoHandler {
 
     @Value("${config.uploads.path}")
     private String path;
+
+    public Mono<ServerResponse> crearConFoto(ServerRequest request){
+
+        Mono<ProductoDocument> productoDocumentMono = request.multipartData().map(multipart->{
+            FormFieldPart nombre = (FormFieldPart) multipart.toSingleValueMap().get("nombre");
+            FormFieldPart precio = (FormFieldPart) multipart.toSingleValueMap().get("precio");
+            FormFieldPart categoriaId = (FormFieldPart) multipart.toSingleValueMap().get("categoria.id");
+            FormFieldPart categoriaNombre = (FormFieldPart) multipart.toSingleValueMap().get("categoria.nombre");
+
+            return new ProductoDocument(nombre.value(),Double.parseDouble(precio.value()),new CategoriaDocument(categoriaId.value(),categoriaNombre.value()));
+        });
+
+        return request.multipartData().map(multipart->{
+                    //obtener archivo subido
+                    return multipart.toSingleValueMap().get("archivo");
+                })
+                //transformar al tipo FilePart por que devuelve
+                .cast(FilePart.class)
+                .flatMap(archivo->{
+                    //buscar registro de producto a editar
+                    return productoDocumentMono.flatMap(p->{
+                        //agregar campos a crear de imagen
+                        p.setFoto(UUID.randomUUID().toString()+"-"+archivo.filename()
+                                .replace(" ", "-")
+                                .replace(":", "")
+                                .replace("\\", ""));
+                        p.setCreateAt(new Date());
+                        //guarda archivo en filesystem
+                        return archivo.transferTo(new File(path+p.getFoto()))
+                                //ejecuta modificar producto en mongodb
+                                .then(productoService.save(p));
+                    });
+                })//Generamos valor de respuesta
+                .flatMap(p->ServerResponse.created(URI.create("/api/v2/productos/".concat(p.getId())))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .body(BodyInserters.fromObject(p)));
+    }
 
     public Mono<ServerResponse> upload(ServerRequest request){
         String id = request.pathVariable("id");
@@ -54,10 +93,6 @@ public class ProductoHandler {
            //en caso el mono este vacio lanzar notFound
            .switchIfEmpty(ServerResponse.notFound().build());
     }
-
-
-
-
 
     public Mono<ServerResponse> listar(ServerRequest request){
         return ServerResponse
