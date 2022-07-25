@@ -19,7 +19,9 @@ public class RouterFunctionConfig {
     public RouterFunction<ServerResponse> routes(ProductoHandler productoHandler){
         return route(GET("/api/v2/productos").or(GET("/api/v3/productos")),request->productoHandler.listar(request))
                 .andRoute(GET("/api/v2/productos/{id}").and(contentType(MediaType.APPLICATION_JSON)), request->productoHandler.ver(request))
-                .andRoute(POST("/api/v2/productos"),request->productoHandler.crear(request));
+                .andRoute(POST("/api/v2/productos"),request->productoHandler.crear(request))
+                .andRoute(PUT("/api/v2/productos/{id}").and(contentType(MediaType.APPLICATION_JSON)), request->productoHandler.editar(request))
+                .andRoute(DELETE("/api/v2/productos/{id}").and(contentType(MediaType.APPLICATION_JSON)), request->productoHandler.eliminar(request));
     }
 
 }

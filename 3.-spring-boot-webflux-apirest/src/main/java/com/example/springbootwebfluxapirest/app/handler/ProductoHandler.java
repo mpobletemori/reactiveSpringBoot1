@@ -50,6 +50,29 @@ public class ProductoHandler {
         );
     }
 
+    public Mono<ServerResponse> editar(ServerRequest request){
+        String id = request.pathVariable("id");
+        Mono<ProductoDocument> productoMonoDb = productoService.findById(id);
+        Mono<ProductoDocument> productoMono = request.bodyToMono(ProductoDocument.class);
+        return productoMonoDb.zipWith(productoMono,(prodDb,req)->{
+              prodDb.setNombre(req.getNombre());
+              prodDb.setPrecio(req.getPrecio());
+              prodDb.setCategoria(req.getCategoria());
+              return prodDb;
+        }).flatMap(p-> ServerResponse.created(URI.create("/api/v2/productos/".concat(p.getId())))
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(productoService.save(p),ProductoDocument.class)
+        ).switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> eliminar(ServerRequest request){
+        String id = request.pathVariable("id");
+        Mono<ProductoDocument> productoMonoDb = productoService.findById(id);
+        return productoMonoDb.flatMap(p->productoService.delete(p)
+                                       .then(ServerResponse.noContent().build())
+                 ).switchIfEmpty(ServerResponse.notFound().build());
+    }
+
 
 
 
