@@ -9,9 +9,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
@@ -27,6 +31,9 @@ public class ProductoHandler {
 
     @Value("${config.uploads.path}")
     private String path;
+
+    @Autowired
+    private Validator validator;
 
     public Mono<ServerResponse> crearConFoto(ServerRequest request){
 
@@ -115,14 +122,27 @@ public class ProductoHandler {
         Mono<ProductoDocument> productoMono = request.bodyToMono(ProductoDocument.class);
 
         return productoMono.flatMap(p->{
-           if(p.getCreateAt() == null){
-               p.setCreateAt(new Date());
-           }
-           return this.productoService.save(p);
-        }).flatMap(p-> ServerResponse.created(URI.create("/api/v2/productos/".concat(p.getId())))
-                                     .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                     .body(BodyInserters.fromObject(p))
-        );
+            Errors errors = new BeanPropertyBindingResult(p, ProductoDocument.class.getName());
+            this.validator.validate(p,errors);
+            if(errors.hasErrors()){
+                       //Crear Flux apartir de listaFieldErrors
+                return Flux.fromIterable(errors.getFieldErrors())
+                         //Transformar Mensaje
+                        .map(fieldError->"El campo "+fieldError.getField()+" "+fieldError.getDefaultMessage())
+                        //Transformar a Mono de lista
+                        .collectList()
+                        //generar respuesta de lista
+                        .flatMap(lista->ServerResponse.badRequest().body(BodyInserters.fromObject(lista)));
+            }
+            if(p.getCreateAt() == null){
+                 p.setCreateAt(new Date());
+            }
+            return this.productoService.save(p).flatMap(prodDB->
+                   ServerResponse.created(URI.create("/api/v2/productos/".concat(prodDB.getId())))
+                       .contentType(MediaType.APPLICATION_JSON_UTF8)
+                       .body(BodyInserters.fromObject(prodDB))
+            );
+        });
     }
 
     public Mono<ServerResponse> editar(ServerRequest request){
