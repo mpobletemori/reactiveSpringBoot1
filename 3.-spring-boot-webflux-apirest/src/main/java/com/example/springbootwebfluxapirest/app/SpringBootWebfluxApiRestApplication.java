@@ -48,7 +48,7 @@ public class SpringBootWebfluxApiRestApplication implements CommandLineRunner {
 				.thenMany(
 						Flux.just(new ProductoDocument("TV Panasonic Pantalla LCD",456.89,electronica)
 										,new ProductoDocument("Sony Camara HD Digital",177.89,electronica)
-										,new ProductoDocument("Apple iPod",46.89)
+										,new ProductoDocument("Apple iPod",46.89,electronica)
 										,new ProductoDocument("Sony Notebook",846.89,computacion)
 										,new ProductoDocument("Bianchi Bicicleta",946.89,deporte)
 										,new ProductoDocument("Mica comoda 5 cajones",1046.89,muebles))
